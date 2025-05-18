@@ -32,21 +32,19 @@ const transcribeAudio = async (audioUri: string) => {
     type: 'audio/x-m4a', // or try audio/mp4 or audio/mpeg
     name: 'audio.m4a',
   } as any);
+   formData.append('model', 'whisper-1');
 console.log('formData:', formData);
   try {
     const response = await fetch(whisperBaseUrl, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'multipart/form-data',
       },
-      body: {
-        file: formData,
-        model: 'whisper-1',
-      },
+      body:formData,
     });
 
     const data = await response.json();
+    console.log('data:', response);
 
     if (!response.ok) {
       console.error('Whisper API error:', data);
