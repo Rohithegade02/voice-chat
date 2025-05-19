@@ -4,12 +4,17 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 const SpeechToText = () => {
   const [text, setText] = useState('');
 
-  const handleConvertToAudio = useCallback(() => {
+  const handleConvertToAudio = useCallback(async () => {
     // This function will handle the conversion of text to audio
     // You can use a library like react-native-tts for this purpose
     // For example:
     // Tts.speak(text);
     console.log('Converting to audio:', text);
+
+    await fetch('/api/tts', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    });
   }, [text]);
 
   return (
