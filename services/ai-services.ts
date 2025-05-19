@@ -1,106 +1,111 @@
 import * as FileSystem from 'expo-file-system';
 
-export const createOpenAIAIService = (apiKey: string) => {
-  const chatBaseUrl = 'https://api.openai.com/v1/chat/completions';
-  const whisperBaseUrl = 'https://api.openai.com/v1/audio/transcriptions';
+// Replace with your ElevenLabs API key
+const ELEVENLABS_API_KEY = 'sk_b44b324ffd37e2150906b0b21a657d9279587b0a6f9f2228';
 
-  const sendAudioAndGetResponse = async (audioUri: string) => {
-    try {
-      console.log('Sending audio to OpenAI Whisper API...');
-      console.log('audioUri:', audioUri);
-      const transcript = await transcribeAudio(audioUri);
-console.log('transcript:', transcript);
-      console.log('Sending transcript to OpenAI Chat API...');
-      const response = await getChatResponse(transcript);
-      return response;
-    } catch (error) {
-      console.error('Error in OpenAIAIService:', error);
-      throw new Error('Failed to process audio and get AI response');
-    }
-  };
+// Voice ID (you can customize this with any from https://elevenlabs.io)
+const ELEVENLABS_VOICE_ID = 'Rachel';
 
-const transcribeAudio = async (audioUri: string) => {
-  const fileInfo = await FileSystem.getInfoAsync(audioUri);
-  console.log('fileInfo:', fileInfo);
-  if (!fileInfo.exists) {
-    throw new Error('Audio file does not exist');
-  }
-
-  const formData = new FormData();
-  formData.append('file', {
-    uri: audioUri,
-    type: 'audio/x-m4a', // or try audio/mp4 or audio/mpeg
-    name: 'audio.m4a',
-  } as any);
-   formData.append('model', 'whisper-1');
-console.log('formData:', formData);
+// Transcribe audio with ElevenLabs
+const transcribeAudio = async (audioUri: string): Promise<string> => {
   try {
-    const response = await fetch(whisperBaseUrl, {
+    const fileInfo = await FileSystem.getInfoAsync(audioUri);
+    if (!fileInfo.exists) throw new Error('Audio file does not exist');
+
+    const formData = new FormData();
+    const fileType = audioUri.split('.').pop() || 'm4a';
+    formData.append('audio', {
+      uri: audioUri,
+      name: `audio.${fileType}`,
+      type: `audio/${fileType === 'm4a' ? 'mp4' : fileType}`,
+    } as any);
+
+    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        'xi-api-key': ELEVENLABS_API_KEY,
       },
-      body:formData,
+      body: formData,
     });
 
     const data = await response.json();
-    console.log('data:', response);
 
     if (!response.ok) {
-      console.error('Whisper API error:', data);
-      throw new Error(`Whisper error: ${data.error?.message ?? response.status}`);
+      throw new Error(data.error || 'Transcription failed');
     }
 
     return data.text;
-  } catch (error) {
-    console.error('Error transcribing:', error);
-    throw error;
+  } catch (err) {
+    console.error('ElevenLabs STT error:', err);
+    throw new Error('Failed to transcribe audio');
   }
 };
 
-  const getChatResponse = async (transcript: string) => {
-    const response = await fetch(chatBaseUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [{ role: 'user', content: transcript }],
-        max_tokens: 1000,
-      }),
+// Convert text to speech with ElevenLabs
+const speakText = async (text: string): Promise<string> => {
+  try {
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_monolingual_v1',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.5,
+          },
+        }),
+      }
+    );
+
+    const blob = await response.blob();
+    const uri = FileSystem.documentDirectory + 'speech.mp3';
+
+    await FileSystem.writeAsStringAsync(uri, await blob.text(), {
+      encoding: FileSystem.EncodingType.Base64,
     });
 
-    if (!response.ok) {
-      throw new Error(`Chat API error: ${response.status}`);
-    }
+    return uri;
+  } catch (err) {
+    console.error('ElevenLabs TTS error:', err);
+    throw new Error('Failed to generate speech');
+  }
+};
 
-    const data = await response.json();
+// Main function: send audio and get AI response via ElevenLabs
+const sendAudioAndGetResponse = async (audioUri: string) => {
+  try {
+    console.log('Transcribing audio...');
+    const transcript = await transcribeAudio(audioUri);
+    console.log('Transcript:', transcript);
+
+    // For now, the same text is echoed back.
+    // If you integrate an LLM, you can use the transcript here.
+    const textResponse = `You said: ${transcript}`;
+
+    console.log('Generating speech...');
+    const audioResponseUri = await speakText(textResponse);
+
     return {
-      text: data.choices?.[0]?.message?.content ?? '',
+      text: textResponse,
+      audioUri: audioResponseUri,
       timestamp: new Date().toISOString(),
     };
-  };
+  } catch (error) {
+    console.error('Error in ElevenLabs AI Service:', error);
+    throw new Error('Failed to process audio');
+  }
+};
 
+export const createAIService = () => {
   return {
     sendAudioAndGetResponse,
     transcribeAudio,
-    getChatResponse,
+    speakText,
   };
-};
-
-export const createAIService = (
-  type: 'claude' | 'openai',
-  config: { apiKey: string }
-) => {
-  console.log(config)
-  switch (type) {
-    case 'claude':
-      return 'not implemented yet'; // Placeholder for Claude AI service
-    case 'openai':
-      return createOpenAIAIService(config.apiKey);
-    default:
-      throw new Error(`Unknown AI service type: ${type}`);
-  }
 };
