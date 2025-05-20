@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rohithegade8.voicechat"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,6 +34,12 @@
         "expo-router",
         {
           "origin": "http://localhost:8081"
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone record audio."
         }
       ]
     ],

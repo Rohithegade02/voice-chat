@@ -1,3 +1,4 @@
+import AudioPlayer from '@/components/AudioPlayer';
 import { Buffer } from 'buffer';
 import * as FileSystem from 'expo-file-system';
 import React, { useCallback, useState } from 'react';
@@ -5,12 +6,10 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const SpeechToText = () => {
   const [text, setText] = useState('');
+  const [audioUri, setAudioUri] = useState<string | null>(null);
 
+  // Function to handle text input changes
   const handleConvertToAudio = useCallback(async () => {
-    // This function will handle the conversion of text to audio
-    // You can use a library like react-native-tts for this purpose
-    // For example:
-    // Tts.speak(text);
     console.log('Converting to audio:', text);
 
     const response = await fetch('/api/tts', {
@@ -22,26 +21,28 @@ const SpeechToText = () => {
       return;
     }
 
-    console.log(response);
+    try {
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
 
-    const arrayBuffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
+      const fileUri = FileSystem.documentDirectory! + Date.now() + '.mp3';
 
-    const fileUri = FileSystem.documentDirectory! + Date.now() + '.mp3';
-
-    await FileSystem.writeAsStringAsync(
-      fileUri,
-      Buffer.from(uint8Array).toString('base64'),
-      {
-        encoding: FileSystem.EncodingType.Base64,
-      },
-    );
-    console.log('Audio file saved to:', fileUri);
+      await FileSystem.writeAsStringAsync(
+        fileUri,
+        Buffer.from(uint8Array).toString('base64'),
+        {
+          encoding: FileSystem.EncodingType.Base64,
+        },
+      );
+      console.log('Audio file saved to:', fileUri);
+      setAudioUri(fileUri);
+    } catch (error) {
+      console.error('Error saving audio file:', error);
+    }
   }, [text]);
 
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 20, marginBottom: 20 }}>Speech to Text</Text>
       <TextInput
         value={text}
         onChangeText={setText}
@@ -52,7 +53,14 @@ const SpeechToText = () => {
       <Pressable style={styles.button} onPress={handleConvertToAudio}>
         <Text style={styles.buttonText}>Convert to Audio</Text>
       </Pressable>
-      <Text>{text}</Text>
+      {audioUri && (
+        <AudioPlayer
+          uri={audioUri}
+          onPlay={(uri) => {
+            console.log('Playing audio from:', uri);
+          }}
+        />
+      )}
     </View>
   );
 };
