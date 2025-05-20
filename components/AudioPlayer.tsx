@@ -5,7 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 
 type AudioPlayerProps = {
   uri: string;
-  onPlay: (uri: string) => void;
+  onPlay?: (uri: string) => void;
 };
 
 const AudioPlayer = ({ uri }: AudioPlayerProps) => {

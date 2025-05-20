@@ -10,8 +10,6 @@ const SpeechToText = () => {
 
   // Function to handle text input changes
   const handleConvertToAudio = useCallback(async () => {
-    console.log('Converting to audio:', text);
-
     const response = await fetch('/api/tts', {
       method: 'POST',
       body: JSON.stringify({ text }),
@@ -34,7 +32,6 @@ const SpeechToText = () => {
           encoding: FileSystem.EncodingType.Base64,
         },
       );
-      console.log('Audio file saved to:', fileUri);
       setAudioUri(fileUri);
     } catch (error) {
       console.error('Error saving audio file:', error);
@@ -53,14 +50,7 @@ const SpeechToText = () => {
       <Pressable style={styles.button} onPress={handleConvertToAudio}>
         <Text style={styles.buttonText}>Convert to Audio</Text>
       </Pressable>
-      {audioUri && (
-        <AudioPlayer
-          uri={audioUri}
-          onPlay={(uri) => {
-            console.log('Playing audio from:', uri);
-          }}
-        />
-      )}
+      {audioUri && <AudioPlayer uri={audioUri} onPlay={() => {}} />}
     </View>
   );
 };

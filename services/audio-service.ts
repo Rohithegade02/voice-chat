@@ -15,7 +15,6 @@ export function useAudioRecordingSevice() {
 
       await audioRecorder.prepareToRecordAsync();
       audioRecorder.record();
-      console.log('Recording started');
       return true;
     } catch (error) {
       console.error('Failed to start recording:', error);
@@ -27,7 +26,6 @@ export function useAudioRecordingSevice() {
     try {
       await audioRecorder.stop();
       setRecordingUri(audioRecorder.uri);
-      console.log('Recording stopped, URI:', audioRecorder.uri);
       return audioRecorder.uri;
     } catch (error) {
       console.error('Failed to stop recording:', error);
