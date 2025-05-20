@@ -1,7 +1,8 @@
 import * as FileSystem from 'expo-file-system';
 
 // Replace with your ElevenLabs API key
-const ELEVENLABS_API_KEY = 'sk_b44b324ffd37e2150906b0b21a657d9279587b0a6f9f2228';
+const ELEVENLABS_API_KEY =
+  'sk_b44b324ffd37e2150906b0b21a657d9279587b0a6f9f2228';
 
 // Voice ID (you can customize this with any from https://elevenlabs.io)
 const ELEVENLABS_VOICE_ID = 'Rachel';
@@ -20,13 +21,16 @@ const transcribeAudio = async (audioUri: string): Promise<string> => {
       type: `audio/${fileType === 'm4a' ? 'mp4' : fileType}`,
     } as any);
 
-    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
-      method: 'POST',
-      headers: {
-        'xi-api-key': ELEVENLABS_API_KEY,
+    const response = await fetch(
+      'https://api.elevenlabs.io/v1/speech-to-text',
+      {
+        method: 'POST',
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+        body: formData,
       },
-      body: formData,
-    });
+    );
 
     const data = await response.json();
 
@@ -60,7 +64,7 @@ const speakText = async (text: string): Promise<string> => {
             similarity_boost: 0.5,
           },
         }),
-      }
+      },
     );
 
     const blob = await response.blob();
@@ -80,15 +84,12 @@ const speakText = async (text: string): Promise<string> => {
 // Main function: send audio and get AI response via ElevenLabs
 const sendAudioAndGetResponse = async (audioUri: string) => {
   try {
-    console.log('Transcribing audio...');
     const transcript = await transcribeAudio(audioUri);
-    console.log('Transcript:', transcript);
 
     // For now, the same text is echoed back.
     // If you integrate an LLM, you can use the transcript here.
     const textResponse = `You said: ${transcript}`;
 
-    console.log('Generating speech...');
     const audioResponseUri = await speakText(textResponse);
 
     return {
