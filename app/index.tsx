@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+import * as FileSystem from 'expo-file-system';
 import React, { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -11,10 +13,30 @@ const SpeechToText = () => {
     // Tts.speak(text);
     console.log('Converting to audio:', text);
 
-    await fetch('/api/tts', {
+    const response = await fetch('/api/tts', {
       method: 'POST',
       body: JSON.stringify({ text }),
     });
+    if (!response.ok) {
+      console.error('Failed to convert text to audio');
+      return;
+    }
+
+    console.log(response);
+
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    const fileUri = FileSystem.documentDirectory! + Date.now() + '.mp3';
+
+    await FileSystem.writeAsStringAsync(
+      fileUri,
+      Buffer.from(uint8Array).toString('base64'),
+      {
+        encoding: FileSystem.EncodingType.Base64,
+      },
+    );
+    console.log('Audio file saved to:', fileUri);
   }, [text]);
 
   return (
