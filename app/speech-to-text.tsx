@@ -7,10 +7,10 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 const SpeechToText = () => {
   const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  // const status = useAudioRecorderState(audioRecorder);
   const [isRecording, setIsRecording] = useState(false);
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
+  const [playbackPosition, setPlayBackWidth] = useState(0);
 
   const handleStartRecording = useCallback(async () => {
     await audioRecorder.prepareToRecordAsync();
@@ -87,13 +87,30 @@ const SpeechToText = () => {
       )}
       {!isRecording && (
         <View>
-          <AudioPlayer uri={audioUri!} />
+          <AudioPlayer
+            uri={audioUri!}
+            onPlaybackPositionChange={setPlayBackWidth}
+          />
           <CustomButton title='Convert to Text' onPress={handleConvert} />
         </View>
       )}
       {transcription && (
         <View>
-          <Text>{transcription.text}</Text>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', lineHeight: 24 }}>
+            {transcription.words.map((word, index: number) => (
+              <Text
+                key={index}
+                style={{
+                  backgroundColor:
+                    playbackPosition > word.start && playbackPosition < word.end
+                      ? 'pink'
+                      : 'transparent',
+                }}
+              >
+                {word.text}
+              </Text>
+            ))}
+          </Text>
         </View>
       )}
     </View>

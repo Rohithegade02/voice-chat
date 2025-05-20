@@ -1,19 +1,23 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 type AudioPlayerProps = {
   uri: string;
-  onPlay?: (uri: string) => void;
+  onPlaybackPositionChange?: (position: number) => void;
 };
 
-const AudioPlayer = ({ uri }: AudioPlayerProps) => {
+const AudioPlayer = ({ uri, onPlaybackPositionChange }: AudioPlayerProps) => {
   const [playBackWidth, setPlayBackWidth] = useState(0);
   const player = useAudioPlayer({ uri });
   const status = useAudioPlayerStatus(player);
 
-  const progress = (status.currentTime / status.duration) * 100;
+  const progress = status.currentTime / status.duration;
+
+  useEffect(() => {
+    onPlaybackPositionChange?.(status.currentTime);
+  }, [status.currentTime]);
 
   return (
     <View
@@ -64,7 +68,7 @@ const AudioPlayer = ({ uri }: AudioPlayerProps) => {
           style={{
             height: 10,
             backgroundColor: 'royalblue',
-            width: `${progress}%`,
+            width: `${progress * 100}%`,
             borderRadius: 10,
           }}
         />
