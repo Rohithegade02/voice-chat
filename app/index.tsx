@@ -1,8 +1,9 @@
 import AudioPlayer from '@/components/AudioPlayer';
+import CustomButton from '@/components/CustomButton';
 import { Buffer } from 'buffer';
 import * as FileSystem from 'expo-file-system';
 import React, { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 
 const SpeechToText = () => {
   const [text, setText] = useState('');
@@ -47,9 +48,7 @@ const SpeechToText = () => {
         placeholder='Press the button to start speaking'
         multiline
       />
-      <Pressable style={styles.button} onPress={handleConvertToAudio}>
-        <Text style={styles.buttonText}>Convert to Audio</Text>
-      </Pressable>
+      <CustomButton title='Convert to Audio' onPress={handleConvertToAudio} />
       {audioUri && <AudioPlayer uri={audioUri} onPlay={() => {}} />}
     </View>
   );
