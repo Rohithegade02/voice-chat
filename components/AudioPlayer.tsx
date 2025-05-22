@@ -1,14 +1,18 @@
-import { FontAwesome } from '@expo/vector-icons';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 
 type AudioPlayerProps = {
   uri: string;
   onPlaybackPositionChange?: (position: number) => void;
+  autoPlay?: boolean; // Add this prop if you want to control auto-play behavior
 };
 
-const AudioPlayer = ({ uri, onPlaybackPositionChange }: AudioPlayerProps) => {
+const AudioPlayer = ({
+  uri,
+  onPlaybackPositionChange,
+  autoPlay = true,
+}: AudioPlayerProps) => {
   const [playBackWidth, setPlayBackWidth] = useState(0);
   const player = useAudioPlayer({ uri });
   const status = useAudioPlayerStatus(player);
@@ -19,33 +23,40 @@ const AudioPlayer = ({ uri, onPlaybackPositionChange }: AudioPlayerProps) => {
     onPlaybackPositionChange?.(status.currentTime);
   }, [status.currentTime]);
 
+  // This effect handles play/pause based on status.playing
+  useEffect(() => {
+    if (status.playing) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  }, [status.playing]);
+
+  useEffect(() => {
+    if (autoPlay && uri) {
+      // Directly call play() instead of setStatusAsync
+      player.play();
+    }
+  }, [uri]);
+
   return (
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        padding: 10,
-      }}
-    >
-      {status.playing ? (
-        <FontAwesome
-          name='pause'
-          size={24}
-          color='royalblue'
+    <View>
+      {/* {status.playing ? (
+        <Pressable
           onPress={() => {
             player.pause();
           }}
-        />
+        >
+          <FontAwesome name='pause' size={24} color='black' />
+        </Pressable>
       ) : (
-        <FontAwesome
-          name='play'
-          size={24}
-          color='royalblue'
+        <Pressable
           onPress={() => {
             player.play();
           }}
-        />
+        >
+          <FontAwesome name='play' size={24} color='black' />
+        </Pressable>
       )}
 
       <Pressable
@@ -67,24 +78,16 @@ const AudioPlayer = ({ uri, onPlaybackPositionChange }: AudioPlayerProps) => {
         <View
           style={{
             height: 10,
-            backgroundColor: 'royalblue',
+            backgroundColor: 'blue',
             width: `${progress * 100}%`,
             borderRadius: 10,
           }}
         />
-        <View
-          style={{
-            width: 15,
-            height: 15,
-            backgroundColor: '#fff',
-            borderRadius: 15,
-            position: 'absolute',
-            transform: [{ translateX: -7.5 }, { translateY: -2.5 }],
-            left: `${progress}%`,
-          }}
-        />
       </Pressable>
-      <Text onPress={() => player.seekTo(0)}>Reset</Text>
+
+      <Pressable onPress={() => player.seekTo(0)}>
+        <Text>Reset</Text>
+      </Pressable> */}
     </View>
   );
 };

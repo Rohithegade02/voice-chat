@@ -1,9 +1,16 @@
-import AudioPlayer from '@/components/AudioPlayer';
-import CustomButton from '@/components/CustomButton';
+import GradientBackground from '@/components/GradientView';
+import TextToSpeech from '@/components/TextSpeech';
 import { AudioModule, RecordingPresets, useAudioRecorder } from 'expo-audio';
 import * as FileSystem from 'expo-file-system';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface TranscriptionWord {
@@ -110,6 +117,12 @@ const SpeechToText = () => {
     }
   }, [audioUri]);
 
+  useEffect(() => {
+    if (audioUri) {
+      handleConvert();
+    }
+  }, [audioUri]);
+
   async function processWithGemini(inputText: string) {
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
 
@@ -181,33 +194,77 @@ const SpeechToText = () => {
   }, [transcription]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      {isRecording ? (
-        <Pressable
-          onPress={handleStopRecording}
-          style={styles.recordButtonActive}
-        />
-      ) : (
-        <Pressable onPress={handleStartRecording} style={styles.recordButton} />
-      )}
+    <GradientBackground>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.mainContainer}>
+          <Image
+            source={require('@/assets/images/icon_background.png')} // Make sure the path is correct
+            style={{ width: 100, height: 100, resizeMode: 'contain' }}
+          />
+          <Text
+            style={{
+              fontFamily: 'Sora-ExtraBold',
+              color: 'white',
+              fontSize: 36,
+            }}
+          >
+            QuickCall AI
+          </Text>
+        </View>
+        <View style={{ flex: 1 }} />
+        <View
+          style={{ paddingBottom: 50, display: 'flex', alignItems: 'center' }}
+        >
+          {isRecording ? (
+            <TouchableOpacity
+              onPress={handleStopRecording}
+              style={styles.recordButton}
+            >
+              <Text
+                style={{
+                  fontFamily: 'Sora-Bold',
+                  fontSize: 14,
+                  color: 'white',
+                }}
+              >
+                Stop Call
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={handleStartRecording}
+              style={styles.recordButton}
+            >
+              <Text
+                style={{
+                  // fontFamily: 'Sora-Bold',
+                  fontSize: 14,
+                  color: 'white',
+                  fontFamily: 'Sora-Bold',
+                }}
+              >
+                Start Call
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-      {!isRecording && audioUri && (
-        <View style={styles.playerContainer}>
-          <AudioPlayer
+        {!isRecording && audioUri && (
+          <View style={styles.playerContainer}>
+            {/* <AudioPlayer
             uri={audioUri}
             onPlaybackPositionChange={setPlaybackPosition}
-          />
-          <CustomButton
+          /> */}
+            {/* <CustomButton
             title={isProcessing ? 'Processing...' : 'Convert to Text'}
             onPress={handleConvert}
             disabled={isProcessing}
-          />
-        </View>
-      )}
+          /> */}
+          </View>
+        )}
 
-      {transcription && (
+        {/* {transcription && (
         <View style={styles.transcriptionContainer}>
-          <Text style={styles.transcriptionTitle}>Transcription:</Text>
           <Text style={styles.transcriptionText}>
             {transcription.words.map((word, index) => (
               <Text
@@ -223,43 +280,57 @@ const SpeechToText = () => {
               </Text>
             ))}
           </Text>
-        </View>
-      )}
-
+        </View> */}
+        {/* 
       {geminiResponse && (
         <View style={styles.geminiContainer}>
           <Text style={styles.geminiTitle}>Gemini Response:</Text>
-          <Text style={styles.geminiText}>{geminiResponse}</Text>
         </View>
-      )}
-    </SafeAreaView>
+      )} */}
+
+        <TextToSpeech text={geminiResponse!} />
+      </SafeAreaView>
+    </GradientBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 20,
-    gap: 20,
+  },
+  safeArea: {
+    flex: 1,
+    position: 'relative',
+    padding: 20,
+  },
+  mainContainer: {
+    paddingTop: 50,
+    gap: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   recordButton: {
-    width: 70,
-    aspectRatio: 1,
-    borderRadius: 100,
-    backgroundColor: 'gainsboro',
+    backgroundColor: '#203B47',
+    borderWidth: 2,
+    borderColor: 'white',
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    paddingHorizontal: 36,
+    paddingVertical: 15,
   },
   recordButtonActive: {
-    width: 70,
-    aspectRatio: 1,
-    borderRadius: 100,
-    backgroundColor: 'crimson',
+    backgroundColor: '#203B47',
+    borderWidth: 2,
+    borderColor: 'white',
     position: 'absolute',
-    bottom: 20,
-    right: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 100,
+    paddingHorizontal: 36,
+    paddingVertical: 15,
   },
   playerContainer: {
     marginTop: 20,
@@ -270,7 +341,7 @@ const styles = StyleSheet.create({
   },
   transcriptionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Sora-Bold',
     marginBottom: 10,
   },
   transcriptionText: {
@@ -279,13 +350,13 @@ const styles = StyleSheet.create({
   },
   geminiContainer: {
     marginTop: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f5f7',
     padding: 15,
     borderRadius: 10,
   },
   geminiTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Sora-Bold',
     marginBottom: 10,
   },
   geminiText: {

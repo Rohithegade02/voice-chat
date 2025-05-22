@@ -1,11 +1,11 @@
-import CustomButton from '@/components/CustomButton';
 import { Buffer } from 'buffer';
 import * as FileSystem from 'expo-file-system';
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import AudioPlayer from './AudioPlayer';
 
 const TextToSpeech = ({ text }: { text: string }) => {
-  console.log('TextToSpeech', text);
+  // console.log('TextToSpeech', text);
   const [audioUri, setAudioUri] = useState<string | null>(null);
 
   // Function to handle text input changes
@@ -14,6 +14,7 @@ const TextToSpeech = ({ text }: { text: string }) => {
       method: 'POST',
       body: JSON.stringify({ text }),
     });
+    console.log('res', response);
     if (!response.ok) {
       console.error('Failed to convert text to audio');
       return;
@@ -38,6 +39,12 @@ const TextToSpeech = ({ text }: { text: string }) => {
     }
   }, [text]);
 
+  useEffect(() => {
+    if (text) {
+      handleConvertToAudio();
+    }
+  }, [text]);
+
   return (
     <View style={styles.container}>
       {/* <TextInput
@@ -47,17 +54,16 @@ const TextToSpeech = ({ text }: { text: string }) => {
         placeholder='Press the button to start speaking'
         multiline
       /> */}
-      <CustomButton title='Convert to Audio' onPress={handleConvertToAudio} />
-      {text && <Text>{text}</Text>}
-      {/* {audioUri && <AudioPlayer uri={audioUri} onPlay={() => {}} />} */}
+      {/* <CustomButton title='Convert to Audio' onPress={handleConvertToAudio} /> */}
+      {audioUri && <AudioPlayer uri={audioUri} />}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    padding: 10,
+    // backgroundColor: '#fff',
+    // padding: 10,
     gap: 10,
   },
   input: {
