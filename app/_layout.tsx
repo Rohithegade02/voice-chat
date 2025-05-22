@@ -1,6 +1,5 @@
-import { FontAwesome5 } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 import 'react-native-reanimated';
 
 export default function RootLayout() {
@@ -14,25 +13,13 @@ export default function RootLayout() {
   }
 
   return (
-    <Tabs>
-      <Tabs.Screen
+    <Stack>
+      <Stack.Screen
         name='index'
         options={{
-          title: 'Text to Speech',
-          tabBarIcon: ({ size, color }) => (
-            <FontAwesome5 name='file-audio' size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name='speech-to-text'
-        options={{
           title: 'Speech to Text',
-          tabBarIcon: ({ size, color }) => (
-            <FontAwesome5 name='microphone' size={size} color={color} />
-          ),
         }}
       />
-    </Tabs>
+    </Stack>
   );
 }
