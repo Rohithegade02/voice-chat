@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     return Response.json({ transcription });
   } catch (error) {
     console.error('Error during transcription:', error);
-    return new Response('Error during transcription', {
+    return new Response(`Error during transcription ${error}`, {
       status: 500,
     });
   }

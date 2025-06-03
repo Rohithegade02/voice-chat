@@ -33,7 +33,7 @@
       [
         "expo-router",
         {
-          "origin": "http://192.168.1.7:8081"
+          "origin": "https://rohithegade8-voice-chat--api-only.expo.app"
         }
       ],
       [
